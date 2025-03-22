@@ -24,14 +24,16 @@ import java.util.List;
 public class AppConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.sessionManagement(
-                managment->managment.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeRequests(
-                        Authorize->Authorize.requestMatchers("/api/**").authenticated().anyRequest().permitAll()
-
-
-        ).addFilterAfter(new JwtTokenValidator(), BasicAuthenticationFilter.class).csrf(AbstractHttpConfigurer::disable).cors(cors->cors.configurationSource(corsConfigurationSource()))
+        http.sessionManagement(Management -> Management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(
+                        Authorize -> Authorize.requestMatchers("/api/**").authenticated().anyRequest().permitAll())
+                .addFilterBefore(new JwtTokenValidator(), BasicAuthenticationFilter.class)
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .httpBasic(Customizer.withDefaults()).formLogin(Customizer.withDefaults());
+
         return http.build();
+
     }
 
     private CorsConfigurationSource corsConfigurationSource() {
@@ -40,9 +42,8 @@ public class AppConfig {
             public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                 CorsConfiguration config = new CorsConfiguration();
                 config.setAllowedOrigins(Arrays.asList(
-                        "https://task-management-omega-dusky.vercel.app",
-                        "http://localhost:5173/"
-                ));
+                        "http://localhost:4000/",
+                        "http://localhost:5173/"));
                 config.setAllowedMethods(Collections.singletonList("*"));
                 config.setAllowCredentials(true);
                 config.setAllowedHeaders(Collections.singletonList("*"));
@@ -53,6 +54,7 @@ public class AppConfig {
             }
         };
     }
+
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
